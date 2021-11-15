@@ -10,7 +10,19 @@ const app = express();
 const httpServer = new HttpServer(app);
 const io = new IOServer(httpServer);
 
+knex.schema.hasTable('products').then(function(exists) {
+    if (!exists) {
+      return knex.schema.createTable('products', table => {
+        table.increments('id')
+        table.string('title')
+        table.integer('price')
+        table.string('thumbNail')
+    })
+        .then(() => console.log("table created"))
+        .catch((err) => { console.log(err); throw err })
 
+    }
+  });
 
 app.use(express.static('public'));
 
