@@ -1,88 +1,135 @@
 const fs = require('fs');
+const { options } = require('./options/mariaDB');
+const knex = require('knex')(options);
 
 class Contenedor {
 
-    constructor( nombreArchivo ){
+    constructor( nombreDb ){
 
-        this.nombre     = nombreArchivo;
+        this.nombre     = nombreDb;
         this.id         = 0
 
     }
 
-    crear(nombre, datos) {
+    crear(datos) {
         try {
-            fs.writeFileSync(nombre,JSON.stringify(datos),'utf-8');
+
+            knex.schema.createTable(this.nombre, table => {
+                table.increments('id')
+                table.string('title')
+                table.integer('price')
+                table.string('thumbNail')
+            })
+                .then(() => console.log("table created"))
+                .catch((err) => { console.log(err); throw err })
+                .finally(() => {
+                    knex.destroy();
+                })
+
         } catch (error) {
             console.log(error)
         }
     }
 
     save( datos ) {
+
+
         try {
-            const all = this.getAll();;
-            const lastId = all[all.length -1].id +1
+            let id;
             const nuevo = {
                 title: datos.title,
                 price: datos.price,
                 thumbNail: datos.thumbNail,
-                id: lastId
             };
-            
-            all.push(nuevo);
-            fs.writeFileSync(this.nombre,JSON.stringify(all),'utf-8');
 
-            return nuevo.id;
+            knex(this.nombre ).insert(nuevo)
+            .then(() => console.log("data inserted"))
+            .catch((err) => { console.log(err); throw err })
+            .finally(() => {
+                knex.destroy();
+            })
+
+            knex.from(this.nombre ).select(id).where('title',nuevo.title)
+            .then((rows) => {
+                for (row of rows) {
+                    id = row['id']
+                }
+            }).catch((err) => { console.log(err); throw err })
+            .finally(() => {
+                knex.destroy();
+            })
+
+            return id;
         } catch (error) {
             console.log(error);
         }
     };
 
     getById( id ) {
+        let retorno;
         try {
-            let arrayData = this.getAll();
+            knex.from(this.nombre ).select("*").where('id',id)
+            .then((rows) => {
+                for (row of rows) {
+                    retorno = {
+                        id: row['id'],
+                        title: row['title'],
+                        price: row['price'],
+                        thumbNail: row['thumbNail']
+                        }
+                    }
+                }
+            ).catch((err) => { console.log(err); throw err })
+            .finally(() => {
+                knex.destroy();
+            })
 
-            return arrayData[id-1];
+            return retorno;
         } catch (error) {
             console.log(error);
         }
     };
 
     getAll() {
-
-        try {
-            let data = fs.readFileSync(this.nombre,'utf-8');
-            return JSON.parse(data);
-        } catch (error) {
-            console.log(error);
-        }
+        
+        let productos = [];
+        knex.from('products').select("*")
+        .then((rows) => {
+            let retorno;
+            for (row of rows) {
+                retorno = {
+                    id: row['id'],
+                    title: row['title'],
+                    price: row['price'],
+                    thumbNail: row['thumbNail']
+                }
+                productos.push(retorno);
+            }
+            return productos
+        }).catch((err) => { console.log(err); throw err })
+            .finally(() => {
+                knex.destroy();
+            })
+            
     };
 
     deleteById( idArchivo ) {
-        try {
-            const arrayData = this.getAll();
-            this.deleteAll();
-            arrayData.forEach(elem => {
-                let valor = JSON.parse(elem);    
-                if(valor.id != idArchivo) {
-                    this.save(valor, valor.id);
-                }
-            });
-            console.log("quitamos el elemento del archivo")
-
-        } catch (error) {
-            console.log(error);
-        }
+        knex.from(this.nombre ).where('id',idArchivo).del()
+        .then(() => { console.log("product deleted")
+        }).catch((err) => { console.log(err); throw err })
+        .finally(() => {
+            knex.destroy();
+        })
 
     };
 
     deleteAll(){
-        try {
-            fs.writeFileSync(this.nombre, "");
-            console.log("lo limpiamos");
-            
-        } catch (error) {
-            console.log(error);
-        }
+        knex.from(this.nombre ).del()
+        .then(() => { console.log("deleted")
+        }).catch((err) => { console.log(err); throw err })
+        .finally(() => {
+            knex.destroy();
+        })
     };
 
 }

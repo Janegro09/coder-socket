@@ -1,19 +1,16 @@
 const socket = io.connect();
 socket.on('mensajes', data => {
-    // console.log(data)
+    console.log(data)
     render(data)
 })
 
+socket.on('productos', data => {
+    console.log(data)
+    renderprodu(data)
+})
 
 
-async function render(data) {
-
-    let productos;
-
-    await fetch('productos.json')
-        .then(response => response.json())
-        .then(data => productos = data);
-    console.log(productos)
+function render(data) {
 
     const html = data.map((elem, index) => {
         return (`<div>
@@ -22,7 +19,10 @@ async function render(data) {
                 <em style='color:greeen'>${elem.text}</em></div>`)
     }).join(" ");
     document.getElementById('messages').innerHTML = html;
-    
+}
+
+function renderProdu(data) {
+
     const htmlProdu = productos.map((v, index) => {
         return (`
         <tr>
@@ -35,6 +35,8 @@ async function render(data) {
     }).join(" ");
     document.getElementById('products').innerHTML = htmlProdu;
 }
+
+
 
 function addMessage(e) {
     const mensaje = {
