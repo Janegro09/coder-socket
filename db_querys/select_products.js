@@ -3,7 +3,6 @@ const knex = require('knex')(options);
 
 knex.from('products').select("*")
     .then((rows) => {
-        console.log(rows)
         for (row of rows) {
             console.log(`${row['id']} ${row['title']} ${row['price']} ${row['thumbNail']}`)
         }

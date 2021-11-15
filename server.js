@@ -17,7 +17,7 @@ app.use(express.static('public'));
 io.on('connection', socket => {
     
     let mensajes = [ ];
-    let productosListados = productos.getAll();
+    let productosListados =  productos.getAll()
     
     console.log('Nuevo cliente conectado');
 
@@ -30,10 +30,40 @@ io.on('connection', socket => {
         socket.emit('mensajes', mensajes);
         
     }).catch((err) => { console.log(err); throw err })
-    .finally(() => {
-        knex.destroy();
+    
+    // seteamos el listado de productos
+    // setTimeout(() => {
+    //     socket.emit('productos',productosListados);
+    // }, 1000)
+
+    socket.on('new-message', data => {
+        // mensaje.push(data)
+        console.log(data)
+        mensajes.push(data)
+        io.sockets.emit('mensajes', mensajes)
+
+        knex('chats').insert(data)
+        .then(() => console.log("data inserted"))
+        .catch((err) => { console.log(err); throw err })
+
     })
-    socket.emit('productos',productosListados);
+
+    socket.on('new-product', data => {
+        data['id'] = productos.save(data);
+        data['id'] = "nuevo"
+        productosListados.push(data)
+        
+        setTimeout(() => {
+            socket.emit('productos',productosListados);
+        }, 3000)
+    });
+
+    setTimeout(() => {
+
+        socket.emit('productos',productosListados);
+    }, 1000)
+
+
 });
 
 app.get('/', (req, res) => {

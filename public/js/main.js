@@ -6,12 +6,11 @@ socket.on('mensajes', data => {
 
 socket.on('productos', data => {
     console.log(data)
-    renderprodu(data)
+    renderProdu(data)
 })
 
 
 function render(data) {
-
     const html = data.map((elem, index) => {
         return (`<div>
                 <strong style='color:blue'>${elem.author}</strong>-
@@ -23,7 +22,7 @@ function render(data) {
 
 function renderProdu(data) {
 
-    const htmlProdu = productos.map((v, index) => {
+    const htmlProdu = data.map((v, index) => {
         return (`
         <tr>
         <th scope="row">${v.id}</th>
@@ -39,6 +38,7 @@ function renderProdu(data) {
 
 
 function addMessage(e) {
+    console.log("hola")
     const mensaje = {
         author: document.getElementById('username').value,
         fecha: Date(),
@@ -47,13 +47,13 @@ function addMessage(e) {
     socket.emit('new-message', mensaje);
     return false
 }
+
 function addProduct(e) {
     const producto = {
         title: document.getElementById('title').value,
         price: document.getElementById('price').value,
         thumbNail: document.getElementById('thumbNail').value,
     };
-    console.log(producto)
     socket.emit('new-product', producto);
     return false
 }

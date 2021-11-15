@@ -22,9 +22,9 @@ class Contenedor {
             })
                 .then(() => console.log("table created"))
                 .catch((err) => { console.log(err); throw err })
-                .finally(() => {
-                    knex.destroy();
-                })
+                // .finally(() => {
+                //     knex.destroy();
+                // })
 
         } catch (error) {
             console.log(error)
@@ -33,9 +33,8 @@ class Contenedor {
 
     save( datos ) {
 
-
+        let id;
         try {
-            let id;
             const nuevo = {
                 title: datos.title,
                 price: datos.price,
@@ -55,14 +54,16 @@ class Contenedor {
                     id = row['id']
                 }
             }).catch((err) => { console.log(err); throw err })
-            .finally(() => {
-                knex.destroy();
-            })
+            // .finally(() => {
+            //     knex.destroy();
+            // })
 
-            return id;
         } catch (error) {
             console.log(error);
         }
+
+        return id;
+
     };
 
     getById( id ) {
@@ -80,9 +81,9 @@ class Contenedor {
                     }
                 }
             ).catch((err) => { console.log(err); throw err })
-            .finally(() => {
-                knex.destroy();
-            })
+            // .finally(() => {
+            //     knex.destroy();
+            // })
 
             return retorno;
         } catch (error) {
@@ -93,7 +94,8 @@ class Contenedor {
     getAll() {
         
         let productos = [];
-        knex.from('products').select("*")
+
+        knex.from(this.nombre).select("*")
         .then((rows) => {
             let retorno;
             for (row of rows) {
@@ -104,22 +106,23 @@ class Contenedor {
                     thumbNail: row['thumbNail']
                 }
                 productos.push(retorno);
+        
+                // console.log(`${row['id']} ${row['title']} ${row['price']} ${row['thumbNail']}`)
             }
-            return productos
         }).catch((err) => { console.log(err); throw err })
-            .finally(() => {
-                knex.destroy();
-            })
-            
+        // .finally(() => {
+        //     knex.destroy();
+        // })
+        return productos
     };
 
     deleteById( idArchivo ) {
         knex.from(this.nombre ).where('id',idArchivo).del()
         .then(() => { console.log("product deleted")
         }).catch((err) => { console.log(err); throw err })
-        .finally(() => {
-            knex.destroy();
-        })
+        // .finally(() => {
+        //     knex.destroy();
+        // })
 
     };
 
